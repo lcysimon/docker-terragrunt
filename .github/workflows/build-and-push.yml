@@ -2,7 +2,9 @@ name: docker
 on: [push]
 env:
   DOCKER_REPOSITORY: lcysimon/terragrunt
+  # https://hub.docker.com/r/hashicorp/terraform/tags
   TERRAFORM_VERSION: 1.0.10
+  # https://github.com/gruntwork-io/terragrunt/releases
   TERRAGRUNT_VERSION: 0.35.5
 
 jobs:
@@ -20,7 +22,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Build and push on main
+        name: Build [and push on main]
         uses: docker/build-push-action@v2
         with:
           context: .
