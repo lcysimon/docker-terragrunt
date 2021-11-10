@@ -6,6 +6,8 @@ env:
   TERRAFORM_VERSION: 1.0.10
   # https://github.com/gruntwork-io/terragrunt/releases
   TERRAGRUNT_VERSION: 0.35.5
+  # Plugins version (should be updated when list of plugins changed)
+  PLUGINS_VERSION: 0
 
 jobs:
   build:
@@ -30,6 +32,8 @@ jobs:
           build-args: |
             TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
             TERRAGRUNT_VERSION=${{ env.TERRAGRUNT_VERSION }}
+            PLUGINS_VERSION=${{ env.PLUGINS_VERSION }}
           tags: |
             ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.TERRAFORM_VERSION }}
+            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.TERRAFORM_VERSION }}.${{ env.PLUGINS_VERSION }}
             ${{ env.DOCKER_REPOSITORY }}:latest
