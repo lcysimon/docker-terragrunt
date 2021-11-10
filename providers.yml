@@ -1,0 +1,5 @@
+---
+providers:
+  -
+    name: hashicorp/aws
+    version: 3.64.1

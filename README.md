@@ -15,6 +15,7 @@ Set your favorite terraform version & terragrunt version as build arg.
 
 ### Release workflow
 
+- Update [providers.yml](providers.yml) to reflect the providers you want. The providers will be built inside the docker image so you do not have time to download them each time. You will not be able to use providers from the internet due to the .terraformrc file
 - Update the [github workflow file](./.github/workflows/build-and-push.yml) with the proper versions
 - Create a merge request, this will test that your docker image can be built.
 - On merge, it will publish the new docker image to dockerhub with proper tags
