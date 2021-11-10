@@ -35,5 +35,5 @@ jobs:
             PLUGINS_VERSION=${{ env.PLUGINS_VERSION }}
           tags: |
             ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.TERRAFORM_VERSION }}
-            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.TERRAFORM_VERSION }}.${{ env.PLUGINS_VERSION }}
+            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.TERRAFORM_VERSION }}_${{ env.PLUGINS_VERSION }}
             ${{ env.DOCKER_REPOSITORY }}:latest
