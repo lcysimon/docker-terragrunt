@@ -7,11 +7,17 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      opentofu_version:
+        description: 'OpenTofu version'
+        default: '1.10.6'
+      terragrunt_version:
+        description: 'Terragrunt version'
+        default: '0.87.5'
 
 env:
   DOCKER_REPOSITORY: lcysimon/terragrunt
-  OPENTOFU_VERSION: 1.10.6
-  TERRAGRUNT_VERSION: 0.87.5
 
 jobs:
   docker:
@@ -33,16 +39,26 @@ jobs:
 
       - name: Build Docker image
         run: |
+          # Determine versions from manual input or env defaults
+          OPENTOFU_VERSION=${{ github.event.inputs.opentofu_version || '1.10.6' }}
+          TERRAGRUNT_VERSION=${{ github.event.inputs.terragrunt_version || '0.87.5' }}
+
+          echo "Building image with OPENTOFU_VERSION=$OPENTOFU_VERSION and TERRAGRUNT_VERSION=$TERRAGRUNT_VERSION"
+
           docker build \
-            --build-arg OPENTOFU_VERSION=${{ env.OPENTOFU_VERSION }} \
-            --build-arg TERRAGRUNT_VERSION=${{ env.TERRAGRUNT_VERSION }} \
-            -t ${{ env.DOCKER_REPOSITORY }}:otf${{ env.OPENTOFU_VERSION }}-tg${{ env.TERRAGRUNT_VERSION }} \
+            --build-arg OPENTOFU_VERSION=$OPENTOFU_VERSION \
+            --build-arg TERRAGRUNT_VERSION=$TERRAGRUNT_VERSION \
+            -t ${{ env.DOCKER_REPOSITORY }}:otf$OPENTOFU_VERSION-tg$TERRAGRUNT_VERSION \
             .
 
       - name: Push Docker image
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
-          docker tag ${{ env.DOCKER_REPOSITORY }}:otf${{ env.OPENTOFU_VERSION }}-tg${{ env.TERRAGRUNT_VERSION }} \
+          OPENTOFU_VERSION=${{ github.event.inputs.opentofu_version || '1.10.6' }}
+          TERRAGRUNT_VERSION=${{ github.event.inputs.terragrunt_version || '0.87.5' }}
+
+          docker tag ${{ env.DOCKER_REPOSITORY }}:otf$OPENTOFU_VERSION-tg$TERRAGRUNT_VERSION \
                      ${{ env.DOCKER_REPOSITORY }}:latest
-          docker push ${{ env.DOCKER_REPOSITORY }}:otf${{ env.OPENTOFU_VERSION }}-tg${{ env.TERRAGRUNT_VERSION }}
+
+          docker push ${{ env.DOCKER_REPOSITORY }}:otf$OPENTOFU_VERSION-tg$TERRAGRUNT_VERSION
           docker push ${{ env.DOCKER_REPOSITORY }}:latest
