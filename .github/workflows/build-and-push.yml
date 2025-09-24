@@ -2,12 +2,10 @@ name: docker
 on: [push]
 env:
   DOCKER_REPOSITORY: lcysimon/terragrunt
-  # https://hub.docker.com/r/hashicorp/terraform/tags
-  TERRAFORM_VERSION: 1.1.3
+  # https://github.com/opentofu/opentofu/pkgs/container/opentofu/versions
+  OPENTOFU_VERSION: 1.10.6
   # https://github.com/gruntwork-io/terragrunt/releases
-  TERRAGRUNT_VERSION: 0.35.20
-  # Plugins version (should be updated when list of plugins changed)
-  PLUGINS_VERSION: 0
+  TERRAGRUNT_VERSION: 0.87.5
 
 jobs:
   build:
@@ -30,10 +28,9 @@ jobs:
           context: .
           push: ${{ github.ref == 'refs/heads/main' }}
           build-args: |
-            TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
+            OPENTOFU_VERSION=${{ env.OPENTOFU_VERSION }}
             TERRAGRUNT_VERSION=${{ env.TERRAGRUNT_VERSION }}
-            PLUGINS_VERSION=${{ env.PLUGINS_VERSION }}
           tags: |
-            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.TERRAFORM_VERSION }}
-            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.TERRAFORM_VERSION }}_${{ env.PLUGINS_VERSION }}
+            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.OPENTOFU_VERSION }}
+            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.OPENTOFU_VERSION }}_${{ env.PLUGINS_VERSION }}
             ${{ env.DOCKER_REPOSITORY }}:latest
