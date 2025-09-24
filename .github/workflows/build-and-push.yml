@@ -1,36 +1,48 @@
-name: docker
-on: [push]
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 env:
   DOCKER_REPOSITORY: lcysimon/terragrunt
-  # https://github.com/opentofu/opentofu/pkgs/container/opentofu/versions
   OPENTOFU_VERSION: 1.10.6
-  # https://github.com/gruntwork-io/terragrunt/releases
   TERRAGRUNT_VERSION: 0.87.5
 
 jobs:
-  build:
+  docker:
     runs-on: ubuntu-latest
+
     steps:
-      -
-        name: Check out repository code
-        uses: actions/checkout@v2
-      -
-        name: Login to DockerHub on main
-        uses: docker/login-action@v1
-        if: github.ref == 'refs/heads/main'
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push'
+        uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build [and push on main]
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: ${{ github.ref == 'refs/heads/main' }}
-          build-args: |
-            OPENTOFU_VERSION=${{ env.OPENTOFU_VERSION }}
-            TERRAGRUNT_VERSION=${{ env.TERRAGRUNT_VERSION }}
-          tags: |
-            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.OPENTOFU_VERSION }}
-            ${{ env.DOCKER_REPOSITORY }}:${{ env.TERRAGRUNT_VERSION }}_${{ env.OPENTOFU_VERSION }}_${{ env.PLUGINS_VERSION }}
-            ${{ env.DOCKER_REPOSITORY }}:latest
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg OPENTOFU_VERSION=${{ env.OPENTOFU_VERSION }} \
+            --build-arg TERRAGRUNT_VERSION=${{ env.TERRAGRUNT_VERSION }} \
+            -t ${{ env.DOCKER_REPOSITORY }}:otf${{ env.OPENTOFU_VERSION }}-tg${{ env.TERRAGRUNT_VERSION }} \
+            .
+
+      - name: Push Docker image
+        if: github.event_name == 'push'
+        run: |
+          docker tag ${{ env.DOCKER_REPOSITORY }}:otf${{ env.OPENTOFU_VERSION }}-tg${{ env.TERRAGRUNT_VERSION }} \
+                     ${{ env.DOCKER_REPOSITORY }}:latest
+          docker push ${{ env.DOCKER_REPOSITORY }}:otf${{ env.OPENTOFU_VERSION }}-tg${{ env.TERRAGRUNT_VERSION }}
+          docker push ${{ env.DOCKER_REPOSITORY }}:latest
