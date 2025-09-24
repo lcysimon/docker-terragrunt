@@ -1,6 +1,12 @@
-# https://hub.docker.com/r/hashicorp/terraform/tags
-ARG TERRAFORM_VERSION
-FROM hashicorp/terraform:$TERRAFORM_VERSION
+# set to unset value to avoid warning
+ARG OPENTOFU_VERSION="unset"
+
+FROM ghcr.io/opentofu/opentofu:${OPENTOFU_VERSION}-minimal AS tofu
+
+FROM alpine:3.20
+
+# Copy the tofu binary from the minimal image
+COPY --from=tofu /usr/local/bin/tofu /usr/local/bin/tofu
 
 ARG TERRAGRUNT_VERSION
 
@@ -8,23 +14,11 @@ ARG TERRAGRUNT_VERSION
 RUN wget -O /bin/terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64 \
   && chmod +x /bin/terragrunt
 
-## Create plugins directory for terraform
-RUN mkdir /plugins
-
-# Install all plugins
-WORKDIR /tmp
-
-ADD install.sh install.sh
-ADD providers.yml providers.yml
-RUN ./install.sh $PLUGINS_PATH
-
-# Clear everything in the tmp folder
-RUN rm * && rm -R .terraform
-
-# Add terraformrc on the home folder
-ADD terraformrc /root/.terraformrc
+# Add curl to call rest api
+RUN apk add curl git
+RUN apk upgrade
 
 WORKDIR /terragrunt
 
 # entrypoint set to terragrunt
-ENTRYPOINT /bin/terragrunt
+ENTRYPOINT ["/bin/terragrunt"]
